@@ -2,14 +2,14 @@
 
 namespace NeuronAI\Providers;
 
-use NeuronAI\Tools\Tool;
+use NeuronAI\Tools\ToolInterface;
 
 trait HandleWithTools
 {
     /**
      * https://docs.anthropic.com/en/docs/build-with-claude/tool-use/overview
      *
-     * @var array<Tool>
+     * @var array<ToolInterface>
      */
     protected array $tools = [];
 
@@ -19,7 +19,7 @@ trait HandleWithTools
         return $this;
     }
 
-    public function findTool($name): ?Tool
+    public function findTool($name): ?ToolInterface
     {
         foreach ($this->tools as $tool) {
             if ($tool->getName() === $name) {
