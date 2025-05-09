@@ -161,9 +161,14 @@ class JsonSchema
         if ($typeName === 'array') {
             $schema['type'] = 'array';
 
+            // Check for ArrayOf attribute
+            $attributes = $property->getAttributes(ArrayOf::class);
             // Parse PHPDoc for the array item type
             $docComment = $property->getDocComment();
-            if ($docComment) {
+            if ($attributes) {
+                $itemClass = $attributes[0]->getArguments()[0];
+                $schema['items'] = $this->generateClassSchema($itemClass, false);
+            } elseif ($docComment) {
                 // Extract type from @var array<Type>
                 preg_match('/@var\s+array<([^>]*)>/', $docComment, $matches);
 
