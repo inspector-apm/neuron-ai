@@ -20,6 +20,7 @@ use NeuronAI\StructuredOutput\Deserializer;
 use NeuronAI\StructuredOutput\JsonExtractor;
 use NeuronAI\StructuredOutput\JsonSchema;
 use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Validator\Mapping\Loader\AttributeLoader;
 use Symfony\Component\Validator\Validation;
 
@@ -124,8 +125,9 @@ trait HandleStructured
         // Validate if the object fields respect the validation attributes
         // https://symfony.com/doc/current/validation.html#constraints
         $this->notify('structured-validating', new Validating($class, $json));
+        $loader = class_exists(AttributeLoader::class) ? new AttributeLoader() : new AnnotationLoader();
         $violations = Validation::createValidatorBuilder()
-            ->addLoader(new AttributeLoader())
+            ->addLoader($loader)
             ->getValidator()
             ->validate($obj);
 
