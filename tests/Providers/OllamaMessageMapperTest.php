@@ -2,9 +2,7 @@
 
 namespace NeuronAI\Tests\Providers;
 
-use NeuronAI\Chat\Messages\Image;
 use NeuronAI\Chat\Messages\ToolCallMessage;
-use NeuronAI\Chat\Messages\UserMessage;
 use NeuronAI\Providers\Ollama\MessageMapper;
 use NeuronAI\Tools\Tool;
 use PHPUnit\Framework\TestCase;

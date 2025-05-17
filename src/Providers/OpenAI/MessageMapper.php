@@ -2,8 +2,9 @@
 
 namespace NeuronAI\Providers\OpenAI;
 
+use NeuronAI\Chat\Attachments\Attachment;
+use NeuronAI\Chat\Attachments\Document;
 use NeuronAI\Chat\Messages\AssistantMessage;
-use NeuronAI\Chat\Messages\Image;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\Chat\Messages\ToolCallResultMessage;
@@ -39,39 +40,46 @@ class MessageMapper implements MessageMapperInterface
             unset($payload['usage']);
         }
 
-        if ($images = $message->getImages()) {
+        $attachments = $message->getAttachments();
+
+        if (is_string($payload['content']) && $attachments) {
             $payload['content'] = [
                 [
                     'type' => 'text',
                     'text' => $payload['content'],
                 ],
             ];
-
-            foreach ($images as $image) {
-                $payload['content'][] = $this->mapImage($image);
-            }
-
-            unset($payload['images']);
         }
+
+        foreach ($attachments as $attachment) {
+            $payload['content'][] = $this->mapAttachment($attachment);
+        }
+
+        unset($payload['attachments']);
 
         $this->mapping[] = $payload;
     }
 
-    protected function mapImage(Image $image)
+    protected function mapAttachment(Attachment $attachment): array
     {
-        return match($image->type) {
-            Image::TYPE_URL => [
+        if ($attachment instanceof Document) {
+            throw new ProviderException('Document attachments are not supported');
+        }
+
+        return match($attachment->contentType) {
+            Attachment::TYPE_URL => [
                 'type' => 'image_url',
                 'image_url' => [
-                    'url' => $image->image,
+                    'url' => $attachment->content,
                 ],
             ],
-            Image::TYPE_BASE64 => [
+            Attachment::TYPE_BASE64 => [
                 'type' => 'image_url',
                 'image_url' => [
-                    'url' => 'data:'.$image->mediaType.';base64,'.$image->image,
-                ]
-            ]
+                    'url' => 'data:'.$attachment->mediaType.';base64,'.$attachment->content,
+                ],
+            ],
+            default => throw new ProviderException('Invalid document type '.$attachment->contentType),
         };
     }
 

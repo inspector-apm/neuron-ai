@@ -2,8 +2,8 @@
 
 namespace NeuronAI\Chat\History;
 
+use NeuronAI\Chat\Attachments\Image;
 use NeuronAI\Chat\Messages\AssistantMessage;
-use NeuronAI\Chat\Messages\Image;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\Chat\Messages\ToolCallResultMessage;

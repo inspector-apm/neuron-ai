@@ -2,11 +2,11 @@
 
 namespace NeuronAI\Providers\Anthropic;
 
+use NeuronAI\Chat\Attachments\Attachment;
 use NeuronAI\Chat\Messages\AssistantMessage;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\Chat\Messages\ToolCallResultMessage;
-use NeuronAI\Chat\Messages\Image;
 use NeuronAI\Chat\Messages\UserMessage;
 use NeuronAI\Exceptions\ProviderException;
 use NeuronAI\Providers\MessageMapperInterface;
@@ -40,43 +40,45 @@ class MessageMapper implements MessageMapperInterface
             unset($payload['usage']);
         }
 
-        if ($images = $message->getImages()) {
+        $attachments = $message->getAttachments();
+
+        if (is_string($payload['content']) && $attachments) {
             $payload['content'] = [
                 [
                     'type' => 'text',
                     'text' => $payload['content'],
                 ],
             ];
-
-            foreach ($images as $image) {
-                $payload['content'][] = $this->mapImage($image);
-            }
-
-            unset($payload['images']);
         }
+
+        foreach ($attachments as $attachment) {
+            $payload['content'][] = $this->mapAttachment($attachment);
+        }
+
+        unset($payload['attachments']);
 
         $this->mapping[] = $payload;
     }
 
-    protected function mapImage(Image $image): array
+    protected function mapAttachment(Attachment $attachment): array
     {
-        return match($image->type) {
-            Image::TYPE_URL => [
-                'type' => 'image',
+        return match($attachment->contentType) {
+            Attachment::TYPE_URL => [
+                'type' => $attachment->type,
                 'source' => [
                     'type' => 'url',
-                    'url' => $image->image,
+                    'url' => $attachment->content,
                 ],
             ],
-            Image::TYPE_BASE64 => [
-                'type' => 'image',
+            Attachment::TYPE_BASE64 => [
+                'type' => $attachment->type,
                 'source' => [
                     'type' => 'base64',
-                    'media_type' => $image->mediaType,
-                    'data' => $image->image,
+                    'media_type' => $attachment->mediaType,
+                    'data' => $attachment->content,
                 ],
             ],
-            default => throw new ProviderException('Invalid image type '.$image->type),
+            default => throw new ProviderException('Invalid document type '.$attachment->contentType),
         };
     }
 
