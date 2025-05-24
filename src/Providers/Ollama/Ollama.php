@@ -94,7 +94,7 @@ class Ollama implements AIProviderInterface
     protected function createToolCallMessage(array $message): Message
     {
         $tools = \array_map(fn (array $item) => $this->findTool($item['function']['name'])
-            ->setInputs($item['function']['arguments']), $message['tool_calls']);
+            ?->setInputs($item['function']['arguments']), $message['tool_calls']);
 
         $result = new ToolCallMessage(
             $message['content'],

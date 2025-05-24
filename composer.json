@@ -35,6 +35,7 @@
         "symfony/process": "^5.0|^6.0|^7.0",
         "typesense/typesense-php": "^5.0",
         "php-http/curl-client": "^2.3",
+        "monolog/monolog": "^3.9",
         "phpstan/phpstan": "^2.1",
         "symfony/cache": "^5.4 || ^6.4 || ^7.0",
         "ext-pdo": "*",
