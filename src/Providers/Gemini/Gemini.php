@@ -7,11 +7,12 @@ use NeuronAI\Chat\Enums\MessageRole;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\HasGuzzleClient;
+use NeuronAI\Properties\BasicProperty;
+use NeuronAI\Properties\PropertyInterface;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\HandleWithTools;
 use NeuronAI\Providers\MessageMapperInterface;
 use NeuronAI\Tools\ToolInterface;
-use NeuronAI\Tools\ToolProperty;
 
 class Gemini implements AIProviderInterface
 {
@@ -85,13 +86,13 @@ class Gemini implements AIProviderInterface
                 ],
             ];
 
-            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolProperty $property) {
+            $properties = \array_reduce($tool->getProperties(), function (array $carry, PropertyInterface $property) {
                 $carry[$property->getName()] = [
                     'description' => $property->getDescription(),
                     'type' => $property->getType(),
                 ];
 
-                if (!empty($property->getEnum())) {
+                if ($property instanceof BasicProperty && !empty($property->getEnum())) {
                     $carry[$property->getName()]['enum'] = $property->getEnum();
                 }
 

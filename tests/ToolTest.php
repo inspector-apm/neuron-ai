@@ -2,6 +2,7 @@
 
 namespace NeuronAI\Tests;
 
+use NeuronAI\Properties\BasicProperty;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolInterface;
 use PHPUnit\Framework\TestCase;
@@ -21,13 +22,13 @@ class ToolTest extends TestCase
     {
         $tool = Tool::make('test', 'Test tool')
             ->addProperty(
-                new \NeuronAI\Tools\ToolProperty('name', 'string', 'User name', true)
+                new BasicProperty('name', 'string', 'User name', true)
             )
             ->addProperty(
-                new \NeuronAI\Tools\ToolProperty('surname', 'string', 'User surname', false)
+                new BasicProperty('surname', 'string', 'User surname', false)
             )
             ->addProperty(
-                new \NeuronAI\Tools\ToolProperty('age', 'integer', 'User age', true)
+                new BasicProperty('age', 'integer', 'User age', true)
             )
             ->setCallable(function (): void {});
 

@@ -2,10 +2,10 @@
 
 namespace NeuronAI\MCP;
 
+use NeuronAI\Properties\BasicProperty;
 use NeuronAI\StaticConstructor;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolInterface;
-use NeuronAI\Tools\ToolProperty;
 
 class McpConnector
 {
@@ -56,7 +56,7 @@ class McpConnector
 
         foreach ($item['inputSchema']['properties'] as $name => $input) {
             $tool->addProperty(
-                new ToolProperty(
+                new BasicProperty(
                     $name,
                     $input['type'],
                     $input['description'] ?? '',

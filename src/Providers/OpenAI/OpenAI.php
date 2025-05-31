@@ -2,15 +2,18 @@
 
 namespace NeuronAI\Providers\OpenAI;
 
-use NeuronAI\Chat\Messages\Message;
 use GuzzleHttp\Client;
+use NeuronAI\Chat\Messages\Message;
+use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\HasGuzzleClient;
+use NeuronAI\Properties\ArrayProperty;
+use NeuronAI\Properties\BasicProperty;
+use NeuronAI\Properties\ObjectProperty;
+use NeuronAI\Properties\PropertyInterface;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\HandleWithTools;
-use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\Providers\MessageMapperInterface;
 use NeuronAI\Tools\ToolInterface;
-use NeuronAI\Tools\ToolProperty;
 
 class OpenAI implements AIProviderInterface
 {
@@ -87,14 +90,27 @@ class OpenAI implements AIProviderInterface
                 ]
             ];
 
-            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolProperty $property) {
+            $properties = \array_reduce($tool->getProperties(), function (array $carry, PropertyInterface $property) {
                 $carry[$property->getName()] = [
                     'description' => $property->getDescription(),
                     'type' => $property->getType(),
                 ];
 
-                if (!empty($property->getEnum())) {
+                if ($property instanceof BasicProperty && !empty($property->getEnum())) {
                     $carry[$property->getName()]['enum'] = $property->getEnum();
+                }
+
+                if ($property instanceof ArrayProperty && !empty($property->getItems())) {
+                    $carry[$property->getName()]['items'] = [
+                        'type' => 'object',
+                        'properties' =>  $property->makeItems(),
+                        'required' => $property->getRequiredProperties(),
+                    ];
+                }
+
+                if ($property instanceof ObjectProperty && !empty($property->getItems())) {
+                    $carry[$property->getName()]['properties'] = $property->makeItems();
+                    $carry[$property->getName()]['required'] = $property->getRequiredProperties();
                 }
 
                 return $carry;

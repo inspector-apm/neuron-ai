@@ -1,8 +1,8 @@
 <?php
 
-namespace NeuronAI\Tools;
+namespace NeuronAI\Properties;
 
-class ToolProperty implements \JsonSerializable
+class BasicProperty implements PropertyInterface
 {
     public function __construct(
         protected string $name,

@@ -7,8 +7,8 @@ use Inspector\Inspector;
 use Inspector\Models\Segment;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Observability\Events\AgentError;
+use NeuronAI\Properties\PropertyInterface;
 use NeuronAI\Tools\Tool;
-use NeuronAI\Tools\ToolProperty;
 
 /**
  * Trace your AI agent execution flow to detect errors and performance bottlenecks in real-time.
@@ -151,7 +151,7 @@ class AgentMonitoring implements \SplObserver
             'Tools' => \array_map(fn (Tool $tool) => [
                 'name' => $tool->getName(),
                 'description' => $tool->getDescription(),
-                'properties' => \array_map(fn (ToolProperty $property) => $property->jsonSerialize(), $tool->getProperties()),
+                'properties' => \array_map(fn (PropertyInterface $property) => $property->jsonSerialize(), $tool->getProperties()),
             ], $agent->getTools()),
             //'Messages' => $agent->resolveChatHistory()->getMessages(),
         ];

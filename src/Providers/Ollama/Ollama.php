@@ -6,11 +6,11 @@ use GuzzleHttp\Client;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\HasGuzzleClient;
+use NeuronAI\Properties\PropertyInterface;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\HandleWithTools;
 use NeuronAI\Providers\MessageMapperInterface;
 use NeuronAI\Tools\ToolInterface;
-use NeuronAI\Tools\ToolProperty;
 
 class Ollama implements AIProviderInterface
 {
@@ -70,7 +70,7 @@ class Ollama implements AIProviderInterface
                 ],
             ];
 
-            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolProperty $property) {
+            $properties = \array_reduce($tool->getProperties(), function (array $carry, PropertyInterface $property) {
                 $carry[$property->getName()] = [
                     'type' => $property->getType(),
                     'description' => $property->getDescription(),

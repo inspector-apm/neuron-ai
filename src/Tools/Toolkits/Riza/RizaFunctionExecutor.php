@@ -4,8 +4,8 @@ namespace NeuronAI\Tools\Toolkits\Riza;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use NeuronAI\Properties\BasicProperty;
 use NeuronAI\Tools\Tool;
-use NeuronAI\Tools\ToolProperty;
 
 class RizaFunctionExecutor extends Tool
 {
@@ -23,21 +23,21 @@ class RizaFunctionExecutor extends Tool
         );
 
         $this->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'code',
                 'string',
                 'The function code to execute.',
                 true,
             )
         )->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'input',
                 'array',
                 'The input arguments to execute the function.',
                 false,
             )
         )->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'env',
                 'array',
                 "Set of key-value pairs to add to the script's execution environment.",

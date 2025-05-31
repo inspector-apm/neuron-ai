@@ -4,8 +4,8 @@ namespace NeuronAI\Tools\Toolkits\Tavily;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
+use NeuronAI\Properties\BasicProperty;
 use NeuronAI\Tools\Tool;
-use NeuronAI\Tools\ToolProperty;
 
 class TavilySearchTool extends Tool
 {
@@ -49,14 +49,14 @@ class TavilySearchTool extends Tool
     protected function initTool()
     {
         $this->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'search_query',
                 'string',
                 'The search query to perform web search.',
                 true
             ),
         )->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'topic',
                 'string',
                 'Explicit the topic you want to perform the web search on.',
@@ -64,7 +64,7 @@ class TavilySearchTool extends Tool
                 ['general', 'news']
             ),
         )->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'time_range',
                 'string',
                 '',
@@ -72,7 +72,7 @@ class TavilySearchTool extends Tool
                 ['day, week, month, year']
             )
         )->addProperty(
-            new ToolProperty(
+            new BasicProperty(
                 'days',
                 'integer',
                 '',

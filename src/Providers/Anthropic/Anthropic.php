@@ -2,15 +2,16 @@
 
 namespace NeuronAI\Providers\Anthropic;
 
+use GuzzleHttp\Client;
 use NeuronAI\Chat\Messages\Message;
+use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\HasGuzzleClient;
+use NeuronAI\Properties\BasicProperty;
+use NeuronAI\Properties\PropertyInterface;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\HandleWithTools;
-use NeuronAI\Chat\Messages\ToolCallMessage;
 use NeuronAI\Providers\MessageMapperInterface;
 use NeuronAI\Tools\ToolInterface;
-use NeuronAI\Tools\ToolProperty;
-use GuzzleHttp\Client;
 
 class Anthropic implements AIProviderInterface
 {
@@ -82,13 +83,13 @@ class Anthropic implements AIProviderInterface
     public function generateToolsPayload(): array
     {
         return \array_map(function (ToolInterface $tool) {
-            $properties = \array_reduce($tool->getProperties(), function ($carry, ToolProperty $property) {
+            $properties = \array_reduce($tool->getProperties(), function ($carry, PropertyInterface $property) {
                 $carry[$property->getName()] = [
                     'type' => $property->getType(),
                     'description' => $property->getDescription(),
                 ];
 
-                if (!empty($property->getEnum())) {
+                if ($property instanceof BasicProperty && !empty($property->getEnum())) {
                     $carry[$property->getName()]['enum'] = $property->getEnum();
                 }
 
