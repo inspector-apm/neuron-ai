@@ -33,6 +33,7 @@ abstract class SupportedDoctrineVectorStore
     {
         return [
             'postgresql',
+            'postgresql120',
             'mysql',
         ];
     }

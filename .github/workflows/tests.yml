@@ -2,7 +2,7 @@ name: Tests
 
 on:
     push:
-        branches: [ "main" ]
+        branches: [ "main","tac" ]
     pull_request:
         branches: [ "main" ]
 
@@ -27,7 +27,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest]
                 php: ['8.2', '8.3', '8.4']
-                dependency-version: [prefer-lowest, prefer-stable]
+                dependency-version: [prefer-highest, prefer-stable]
 
         name: PHP ${{ matrix.php }} - ${{ matrix.os }} - ${{ matrix.dependency-version }}
 

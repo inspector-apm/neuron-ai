@@ -15,11 +15,15 @@ class VectorType extends Type
      */
     public function getSQLDeclaration(array $column, AbstractPlatform $platform): string
     {
-        // getName is deprecated since doctrine/dbal 2.13 see: https://github.com/doctrine/dbal/issues/4749
-        // BUT it is the most stable way to check if the platform is PostgreSQLPlatform in a lot of doctrine versions
-        // so we will use it and add a check for the class name in case it is removed in the future
-        if (! \in_array($platform->getName(), SupportedDoctrineVectorStore::values())) {
-            throw Exception::notSupported('VECTORs not supported by Platform.');
+        $platformClass = get_class($platform);
+
+        $parts = explode('\\', $platformClass);
+        $shortName = end($parts); // e.g., 'PostgreSQLPlatform'
+
+        $shortName =  strtolower(str_replace('Platform', '', $shortName)); // e.g., 'postgresql'
+
+        if (! \in_array($shortName, SupportedDoctrineVectorStore::values())) {
+            throw Exception::notSupported('VECTORs not supported by Platform. ' . $shortName);
         }
 
         if (! isset($column['length'])) {
