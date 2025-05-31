@@ -30,8 +30,11 @@ class DoctrineVectorStoreTest extends TestCase
         if (!$this->isPortOpen('127.0.0.1', 3306)) {
             $this->markTestSkipped('Port 3306 is not open. Skipping test.');
         }
-
-        $this->bootstrapDatabase();
+        try {
+            $this->bootstrapDatabase();
+        } catch (\PDOException $e) {
+            $this->markTestSkipped("❌ Connection or database creation error: " . $e->getMessage());
+        }
 
         if (!Type::hasType(self::TYPE_NAME)) {
             Type::addType(self::TYPE_NAME, VectorType::class);
