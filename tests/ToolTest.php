@@ -2,6 +2,8 @@
 
 namespace NeuronAI\Tests;
 
+use NeuronAI\Tests\stubs\Color;
+use NeuronAI\Tools\ObjectProperty;
 use NeuronAI\Tools\PropertyType;
 use NeuronAI\Tools\ToolProperty;
 use NeuronAI\Tools\Tool;
@@ -36,10 +38,31 @@ class ToolTest extends TestCase
             ->addProperty(
                 new ToolProperty('age', PropertyType::INTEGER, 'User age', true)
             )
-            ->setCallable(function (): void {});
+            ->setCallable(function (): void {
+            });
 
         $properties = $tool->getRequiredProperties();
         $this->assertEquals(['name', 'age'], $properties);
+    }
+
+    public function test_required_properties_with_mapped_object()
+    {
+        $tool = Tool::make('test', 'Test tool')
+            ->addProperty(
+                new ObjectProperty(
+                    name: 'name',
+                    description: 'User name',
+                    required: true,
+                    class: Color::class
+                )
+            )
+            ->setCallable(function (): void {
+            });
+
+        $toolRequiredProperties = $tool->getRequiredProperties();
+        $objRequiredProperties = $tool->getProperties()[0]->getRequiredProperties();
+        $this->assertEquals(['name'], $toolRequiredProperties);
+        $this->assertEquals(['r', 'g', 'b'], $objRequiredProperties);
     }
 
     public function test_tool_return_value()
@@ -70,6 +93,7 @@ class ToolTest extends TestCase
 
         $this->expectException(\TypeError::class);
 
-        $tool->setCallable(fn () => new class () {})->execute();
+        $tool->setCallable(fn () => new class () {
+        })->execute();
     }
 }

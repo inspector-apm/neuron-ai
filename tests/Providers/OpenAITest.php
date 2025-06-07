@@ -13,7 +13,9 @@ use NeuronAI\Chat\Enums\AttachmentContentType;
 use NeuronAI\Chat\Messages\UserMessage;
 use NeuronAI\Exceptions\ProviderException;
 use NeuronAI\Providers\OpenAI\OpenAI;
+use NeuronAI\Tests\stubs\Color;
 use NeuronAI\Tools\ArrayProperty;
+use NeuronAI\Tools\ObjectProperty;
 use NeuronAI\Tools\PropertyType;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolProperty;
@@ -287,13 +289,85 @@ class OpenAITest extends TestCase
                             'array_prop',
                             'description',
                             false,
-                            [
-                                new ToolProperty(
-                                    'simple_prop',
-                                    PropertyType::STRING,
-                                    'description',
-                                )
-                            ]
+                            new ToolProperty(
+                                'simple_prop',
+                                PropertyType::STRING,
+                                'description',
+                            )
+                        )
+                    )
+            ])
+            ->setClient($client);
+
+        $response = $provider->chat([new UserMessage('Hi')]);
+
+        // Ensure we sent one request
+        $this->assertCount(1, $sentRequests);
+        $request = $sentRequests[0];
+
+        // Ensure we have sent the expected request payload.
+        $expectedRequest = [
+            'model' => 'gpt-4o',
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => 'Hi',
+                ],
+            ],
+            'tools' => [
+                [
+                    'type' => 'function',
+                    'function' => [
+                        'name' => 'tool',
+                        'description' => 'description',
+                        'parameters' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'array_prop' => [
+                                    'type' => 'array',
+                                    'description' => 'description',
+                                    'items' => [
+                                        'type' => 'string',
+                                        'description' => 'description',
+                                    ]
+                                ]
+                            ],
+                            'required' => [],
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertSame($expectedRequest, json_decode($request['request']->getBody()->getContents(), true));
+    }
+
+    public function test_tools_payload_with_array_object_mapped()
+    {
+        $sentRequests = [];
+        $history = Middleware::history($sentRequests);
+        $mockHandler = new MockHandler([
+            new Response(status: 200, body: $this->body),
+        ]);
+        $stack = HandlerStack::create($mockHandler);
+        $stack->push($history);
+
+        $client = new Client(['handler' => $stack]);
+
+        $provider = (new OpenAI('', 'gpt-4o'))
+            ->setTools([
+                Tool::make('tool', 'description')
+                    ->addProperty(
+                        new ArrayProperty(
+                            'array_prop',
+                            'description',
+                            true,
+                            new ObjectProperty(
+                                'color',
+                                'Description for color',
+                                true,
+                                Color::class
+                            )
                         )
                     )
             ])
@@ -328,17 +402,26 @@ class OpenAITest extends TestCase
                                     'description' => 'description',
                                     'items' => [
                                         'type' => 'object',
+                                        'description' => 'Description for color',
                                         'properties' => [
-                                            'simple_prop' => [
-                                                'type' => 'string',
-                                                'description' => 'description',
+                                            "r" => [
+                                                'type' => 'number',
+                                                'description' => 'The RED',
+                                            ],
+                                            "g" => [
+                                                'type' => 'number',
+                                                'description' => 'The GREEN',
+                                            ],
+                                            "b" => [
+                                                'type' => 'number',
+                                                'description' => 'The BLUE',
                                             ]
                                         ],
-                                        'required' => []
+                                        "required" => ["r", "g", "b"]
                                     ]
                                 ]
                             ],
-                            'required' => [],
+                            'required' => ["array_prop"],
                         ]
                     ]
                 ]

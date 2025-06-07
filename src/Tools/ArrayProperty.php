@@ -10,7 +10,7 @@ class ArrayProperty implements ToolPropertyInterface
         protected string $name,
         protected string $description,
         protected bool $required = false,
-        protected array $items = [],
+        protected ?ToolPropertyInterface $items = null,
     ) {
     }
 
@@ -25,13 +25,6 @@ class ArrayProperty implements ToolPropertyInterface
         ];
     }
 
-    public function getRequiredProperties(): array
-    {
-        return array_values(\array_filter(\array_map(function (ToolPropertyInterface $property) {
-            return $property->isRequired() ? $property->getName() : null;
-        }, $this->items)));
-    }
-
     public function getJsonSchema(): array
     {
         $schema = [
@@ -39,17 +32,8 @@ class ArrayProperty implements ToolPropertyInterface
             'description' => $this->description,
         ];
 
-        $items = \array_reduce($this->items, function (array $carry, ToolPropertyInterface $property) {
-            $carry[$property->getName()] = $property->getJsonSchema();
-            return $carry;
-        }, []);
-
-        if (!empty($items)) {
-            $schema['items'] = [
-                'type' => 'object',
-                'properties' => $items,
-                'required' => $this->getRequiredProperties(),
-            ];
+        if (!empty($this->items)) {
+            $schema['items'] = $this->items->getJsonSchema();
         }
 
         return $schema;
@@ -75,7 +59,7 @@ class ArrayProperty implements ToolPropertyInterface
         return $this->description;
     }
 
-    public function getItems(): array
+    public function getItems(): ?ToolPropertyInterface
     {
         return $this->items;
     }

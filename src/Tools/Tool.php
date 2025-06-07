@@ -6,6 +6,7 @@ use NeuronAI\Exceptions\MissingCallbackParameter;
 use NeuronAI\Exceptions\ToolCallableNotSet;
 use NeuronAI\Exceptions\ToolException;
 use NeuronAI\StaticConstructor;
+use NeuronAI\StructuredOutput\Deserializer\Deserializer;
 
 class Tool implements ToolInterface
 {
@@ -141,13 +142,40 @@ class Tool implements ToolInterface
 
         // Validate required parameters
         foreach ($this->properties as $property) {
-            if ($property->isRequired() && ! \array_key_exists($property->getName(), $this->getInputs())) {
+            if ($property->isRequired() && !\array_key_exists($property->getName(), $this->getInputs())) {
                 throw new MissingCallbackParameter("Missing required parameter: {$property->getName()}");
             }
         }
 
+        // Deserialize arrays and objects parameters
+        $parameters = array_map(function (ToolPropertyInterface $property) {
+            // Find the corresponding input
+            $input = $this->getInputs()[$property->getName()];
+
+            if ($property->getType() === PropertyType::ARRAY && $property instanceof ArrayProperty) {
+                $items = $property->getItems();
+                if ($items->getType() === PropertyType::OBJECT && $items instanceof ObjectProperty) {
+                    $class = $items->getClass();
+
+                    return array_map(function ($item) use ($class) {
+                        $strObject = json_encode($item);
+                        return Deserializer::fromJson($strObject, $class);
+                    }, $input);
+                }
+            }
+
+            if ($property->getType() === PropertyType::OBJECT && $property instanceof ObjectProperty) {
+                $strObject = json_encode($input);
+
+                return Deserializer::fromJson($strObject, $property->getClass());
+            }
+
+            // No extra traitements for basic types
+            return $input;
+        }, $this->properties);
+
         $this->setResult(
-            \call_user_func($this->callback, ...$this->getInputs())
+            \call_user_func($this->callback, ...$parameters)
         );
     }
 
