@@ -1,15 +1,26 @@
 <?php
 
-namespace NeuronAI\RAG\DataLoader;
+namespace NeuronAI\RAG\Splitter;
 
 use NeuronAI\RAG\Document;
 
-class DocumentSplitter
+class DelimiterTextSplitter implements SplitterInterface
 {
+    private int $maxLength;
+    private string $separator;
+    private int $wordOverlap;
+
+    public function __construct(int $maxLength = 1000, string $separator = ' ', int $wordOverlap = 0)
+    {
+        $this->maxLength = $maxLength;
+        $this->separator = $separator;
+        $this->wordOverlap = $wordOverlap;
+    }
+
     /**
      * @return array<Document>
      */
-    public static function splitDocument(Document $document, int $maxLength = 1000, string $separator = ' ', int $wordOverlap = 0): array
+    public function splitDocument(Document $document): array
     {
         $text = $document->content;
 
@@ -17,7 +28,7 @@ class DocumentSplitter
             return [];
         }
 
-        if (\strlen($text) <= $maxLength) {
+        if (\strlen($text) <= $this->maxLength) {
             if (empty($document->hash)) {
                 $document->hash = \hash('sha256', $text);
             }
@@ -28,9 +39,9 @@ class DocumentSplitter
             return [$document];
         }
 
-        $parts = \explode($separator, $text);
+        $parts = \explode($this->separator, $text);
 
-        $chunks = self::createChunksWithOverlap($parts, $maxLength, $separator, $wordOverlap);
+        $chunks = $this->createChunksWithOverlap($parts);
 
         $split = [];
         $chunkNumber = 0;
@@ -52,12 +63,12 @@ class DocumentSplitter
      * @param  array<Document>  $documents
      * @return array<Document>
      */
-    public static function splitDocuments(array $documents, int $maxLength = 1000, string $separator = '.', int $wordOverlap = 0): array
+    public function splitDocuments(array $documents): array
     {
         $split = [];
 
         foreach ($documents as $document) {
-            $split = \array_merge($split, static::splitDocument($document, $maxLength, $separator, $wordOverlap));
+            $split = \array_merge($split, $this->splitDocument($document));
         }
 
         return $split;
@@ -67,7 +78,7 @@ class DocumentSplitter
      * @param  array<string>  $words
      * @return array<string>
      */
-    private static function createChunksWithOverlap(array $words, int $maxLength, string $separator, int $wordOverlap): array
+    private function createChunksWithOverlap(array $words): array
     {
         $chunks = [];
         $currentChunk = [];
@@ -77,26 +88,26 @@ class DocumentSplitter
                 continue;
             }
 
-            if ($currentChunkLength + \strlen($separator.$word) <= $maxLength || $currentChunk === []) {
+            if ($currentChunkLength + \strlen($this->separator.$word) <= $this->maxLength || $currentChunk === []) {
                 $currentChunk[] = $word;
-                $currentChunkLength = self::calculateChunkLength($currentChunk, $separator);
+                $currentChunkLength = $this->calculateChunkLength($currentChunk, $this->separator);
             } else {
                 // Add the chunk with overlap
-                $chunks[] = \implode($separator, $currentChunk);
+                $chunks[] = \implode($this->separator, $currentChunk);
 
                 // Calculate overlap words
-                $calculatedOverlap = \min($wordOverlap, \count($currentChunk) - 1);
+                $calculatedOverlap = \min($this->wordOverlap, \count($currentChunk) - 1);
                 $overlapWords = $calculatedOverlap > 0 ? \array_slice($currentChunk, -$calculatedOverlap) : [];
 
                 // Start a new chunk with overlap words
                 $currentChunk = [...$overlapWords, $word];
                 $currentChunk[0] = \trim($currentChunk[0]);
-                $currentChunkLength = self::calculateChunkLength($currentChunk, $separator);
+                $currentChunkLength = $this->calculateChunkLength($currentChunk, $this->separator);
             }
         }
 
         if ($currentChunk !== []) {
-            $chunks[] = \implode($separator, $currentChunk);
+            $chunks[] = \implode($this->separator, $currentChunk);
         }
 
         return $chunks;
@@ -105,8 +116,8 @@ class DocumentSplitter
     /**
      * @param  array<string>  $currentChunk
      */
-    private static function calculateChunkLength(array $currentChunk, string $separator): int
+    private function calculateChunkLength(array $currentChunk, string $separator): int
     {
-        return \array_sum(\array_map('strlen', $currentChunk)) + \count($currentChunk) * \strlen($separator) - 1;
+        return \array_sum(\array_map('strlen', $currentChunk)) + \count($currentChunk) * \strlen($this->separator) - 1;
     }
 }

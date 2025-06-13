@@ -13,6 +13,7 @@ class FileDataLoader extends AbstractDataLoader
 
     public function __construct(protected string $path, array $readers = [])
     {
+        parent::__construct();
         $this->setReaders($readers);
     }
 
@@ -75,12 +76,7 @@ class FileDataLoader extends AbstractDataLoader
             closedir($handle);
         }
 
-        return DocumentSplitter::splitDocuments(
-            $documents,
-            $this->maxLength,
-            $this->separator,
-            $this->wordOverlap
-        );
+        return $this->splitter->splitDocuments($documents);
     }
 
     /**

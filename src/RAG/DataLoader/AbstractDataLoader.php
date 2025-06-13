@@ -2,11 +2,21 @@
 
 namespace NeuronAI\RAG\DataLoader;
 
+use NeuronAI\RAG\Splitter\DelimiterTextSplitter;
+use NeuronAI\RAG\Splitter\SplitterInterface;
+
 abstract class AbstractDataLoader implements DataLoaderInterface
 {
-    protected int $maxLength = 1000;
-    protected string $separator = '.';
-    protected int $wordOverlap = 0;
+    protected SplitterInterface $splitter;
+
+    public function __construct()
+    {
+        $this->splitter = new DelimiterTextSplitter(
+            maxLength: 1000,
+            separator: '.',
+            wordOverlap: 0
+        );
+    }
 
     public static function for(...$arguments): static
     {
@@ -14,21 +24,9 @@ abstract class AbstractDataLoader implements DataLoaderInterface
         return new static(...$arguments);
     }
 
-    public function withMaxLength(int $maxLength): DataLoaderInterface
+    public function withSplitter(SplitterInterface $splitter): DataLoaderInterface
     {
-        $this->maxLength = $maxLength;
-        return $this;
-    }
-
-    public function withSeparator(string $separator): DataLoaderInterface
-    {
-        $this->separator = $separator;
-        return $this;
-    }
-
-    public function withOverlap(int $overlap): DataLoaderInterface
-    {
-        $this->wordOverlap = $overlap;
+        $this->splitter = $splitter;
         return $this;
     }
 }
