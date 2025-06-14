@@ -3,19 +3,21 @@
 namespace NeuronAI\RAG\VectorStore;
 
 use NeuronAI\Exceptions\VectorStoreException;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 use NeuronAI\RAG\VectorStore\Search\SimilaritySearch;
 
 class MemoryVectorStore implements VectorStoreInterface
 {
-    /** @var array<Document> */
+    /**
+     * @var DocumentModelInterface[]
+     */
     private array $documents = [];
 
     public function __construct(protected int $topK = 4)
     {
     }
 
-    public function addDocument(Document $document): void
+    public function addDocument(DocumentModelInterface $document): void
     {
         $this->documents[] = $document;
     }
@@ -25,15 +27,15 @@ class MemoryVectorStore implements VectorStoreInterface
         $this->documents = \array_merge($this->documents, $documents);
     }
 
-    public function similaritySearch(array $embedding): array
+    public function similaritySearch(array $embedding, string $documentModel): array
     {
         $distances = [];
 
         foreach ($this->documents as $index => $document) {
-            if ($document->embedding === null) {
-                throw new VectorStoreException("Document with the following content has no embedding: {$document->content}");
+            if (empty($document->embedding)) {
+                throw new VectorStoreException("Document with the following content has no embedding: {$document->getContent()}");
             }
-            $dist = $this->cosineSimilarity($embedding, $document->embedding);
+            $dist = $this->cosineSimilarity($embedding, $document->getEmbedding());
             $distances[$index] = $dist;
         }
 
@@ -43,7 +45,7 @@ class MemoryVectorStore implements VectorStoreInterface
 
         return \array_reduce($topKIndices, function ($carry, $index) use ($distances) {
             $document = $this->documents[$index];
-            $document->score = 1 - $distances[$index];
+            $document->setScore(1 - $distances[$index]);
             $carry[] = $document;
             return $carry;
         }, []);

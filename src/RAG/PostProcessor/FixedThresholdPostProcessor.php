@@ -3,12 +3,12 @@
 namespace NeuronAI\RAG\PostProcessor;
 
 use NeuronAI\Chat\Messages\Message;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 
 class FixedThresholdPostProcessor implements PostProcessorInterface
 {
     /**
-     * Creates a post processor that filters documents based on a fixed threshold.
+     * Creates a post-processor that filters documents based on a fixed threshold.
      *
      * @param float $threshold threshold value (documents with scores below this value will be filtered out)
      */
@@ -20,15 +20,8 @@ class FixedThresholdPostProcessor implements PostProcessorInterface
     ) {
     }
 
-    /**
-     * Filters documents using a fixed threshold value.
-     *
-     * @param Message $question
-     * @param Document[] $documents
-     * @return Document[]
-     */
     public function process(Message $question, array $documents): array
     {
-        return \array_values(\array_filter($documents, fn ($document) => $document->score >= $this->threshold));
+        return \array_values(\array_filter($documents, fn (DocumentModelInterface $document) => $document->getScore() >= $this->threshold));
     }
 }

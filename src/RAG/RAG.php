@@ -26,7 +26,12 @@ class RAG extends Agent
     use ResolveEmbeddingProvider;
 
     /**
-     * @var array<PostprocessorInterface>
+     * The default document model.
+     */
+    protected string $documentModel = Document::class;
+
+    /**
+     * @var PostprocessorInterface[]
      */
     protected array $postProcessors = [];
 
@@ -68,8 +73,7 @@ class RAG extends Agent
     /**
      * Set the system message based on the context.
      *
-     * @param array<Document> $documents
-     * @return AgentInterface
+     * @param DocumentModelInterface[] $documents
      */
     public function withDocumentsContext(array $documents): AgentInterface
     {
@@ -81,7 +85,7 @@ class RAG extends Agent
 
         $newInstructions .= '<EXTRA-CONTEXT>';
         foreach ($documents as $document) {
-            $newInstructions .= $document->content.PHP_EOL.PHP_EOL;
+            $newInstructions .= $document->getContent().PHP_EOL.PHP_EOL;
         }
         $newInstructions .= '</EXTRA-CONTEXT>';
 
@@ -102,21 +106,22 @@ class RAG extends Agent
     /**
      * Retrieve relevant documents from the vector store.
      *
-     * @return array<Document>
+     * @return DocumentModelInterface[]
      */
     public function retrieveDocuments(Message $question): array
     {
         $this->notify('rag-vectorstore-searching', new VectorStoreSearching($question));
 
-        $docs = $this->resolveVectorStore()->similaritySearch(
-            $this->resolveEmbeddingsProvider()->embedText($question->getContent())
+        $documents = $this->resolveVectorStore()->similaritySearch(
+            $this->resolveEmbeddingsProvider()->embedText($question->getContent()),
+            $this->documentModel
         );
 
         $retrievedDocs = [];
 
-        foreach ($docs as $doc) {
+        foreach ($documents as $document) {
             //md5 for removing duplicates
-            $retrievedDocs[\md5($doc->content)] = $doc;
+            $retrievedDocs[\md5($document->getContent())] = $document;
         }
 
         $retrievedDocs = \array_values($retrievedDocs);
@@ -130,8 +135,8 @@ class RAG extends Agent
      * Apply a series of postprocessors to the retrieved documents.
      *
      * @param Message $question The question to process the documents for.
-     * @param array<Document> $documents The documents to process.
-     * @return array<Document> The processed documents.
+     * @param DocumentModelInterface[] $documents The documents to process.
+     * @return DocumentModelInterface[] The processed documents.
      */
     protected function applyPostProcessors(Message $question, array $documents): array
     {
@@ -147,7 +152,7 @@ class RAG extends Agent
     /**
      * Feed the vector store with documents.
      *
-     * @param array<Document> $documents
+     * @param DocumentModelInterface[] $documents
      * @return void
      */
     public function addDocuments(array $documents): void

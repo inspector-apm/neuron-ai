@@ -38,15 +38,31 @@ class ElasticsearchTest extends TestCase
 
     public function test_add_document_and_search()
     {
-        $this->expectNotToPerformAssertions();
         $store = new ElasticsearchVectorStore($this->client, 'test');
 
         $document = new Document('Hello World!');
         $document->embedding = $this->embedding;
-        $document->hash = \hash('sha256', 'Hello World!' . time());
 
         $store->addDocument($document);
 
-        $results = $store->similaritySearch($this->embedding);
+        $results = $store->similaritySearch($this->embedding, Document::class);
+
+        $this->assertEquals($document->getContent(), $results[0]->getContent());
+    }
+
+    public function test_custom_document_model()
+    {
+        $store = new ElasticsearchVectorStore($this->client, 'test');
+
+        $document = new class extends Document {
+            public string $customProperty = 'customValue';
+        };
+        $document->embedding = $this->embedding;
+
+        $store->addDocument($document);
+
+        $results = $store->similaritySearch($this->embedding, $document::class);
+
+        $this->assertEquals($document->customProperty, $results[0]->customProperty);
     }
 }

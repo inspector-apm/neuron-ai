@@ -33,6 +33,10 @@ abstract class AbstractToolkit implements ToolkitInterface
 
     public function tools(): array
     {
+        if (empty($this->exclude)) {
+            return $this->provide();
+        }
+
         return \array_filter($this->provide(), fn (ToolInterface $tool) => !in_array($tool::class, $this->exclude));
     }
 }

@@ -3,12 +3,12 @@
 namespace NeuronAI\RAG\PostProcessor;
 
 use NeuronAI\Chat\Messages\Message;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 
 class AdaptiveThresholdPostProcessor implements PostProcessorInterface
 {
     /**
-     * Creates a post processor that filters documents using an adaptive threshold
+     * Creates a post-processor that filters documents using an adaptive threshold
      * based on median and MAD (Median Absolute Deviation).
      *
      * Recommended multiplier values:
@@ -26,10 +26,6 @@ class AdaptiveThresholdPostProcessor implements PostProcessorInterface
     /**
      * Filters documents using a threshold calculated dynamically with median and MAD
      * for greater robustness against outliers.
-     *
-     * @param Message $question
-     * @param Document[] $documents
-     * @return Document[]
      */
     public function process(Message $question, array $documents): array
     {
@@ -37,7 +33,7 @@ class AdaptiveThresholdPostProcessor implements PostProcessorInterface
             return $documents;
         }
 
-        $scores = array_map(fn ($d) => $d->score, $documents);
+        $scores = array_map(fn ($document) => $document->getScore(), $documents);
         $median = $this->calculateMedian($scores);
         $mad = $this->calculateMAD($scores, $median);
 
@@ -49,10 +45,10 @@ class AdaptiveThresholdPostProcessor implements PostProcessorInterface
         // Threshold: median - multiplier * MAD
         $threshold = $median - ($this->multiplier * $mad);
 
-        // Ensure threshold is not negative
+        // Ensure a threshold is not negative
         $threshold = max(0, $threshold);
 
-        return \array_values(\array_filter($documents, fn ($document) => $document->score >= $threshold));
+        return \array_values(\array_filter($documents, fn (DocumentModelInterface $document) => $document->getScore() >= $threshold));
     }
 
     /**

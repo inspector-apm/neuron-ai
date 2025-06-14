@@ -5,14 +5,18 @@ namespace NeuronAI\RAG\VectorStore\Doctrine;
 use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\EntityManagerInterface;
 use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 use NeuronAI\RAG\VectorStore\VectorStoreInterface;
 
 class DoctrineVectorStore implements VectorStoreInterface
 {
+    protected array $filters = [];
+
     private readonly SupportedDoctrineVectorStore $doctrineVectorStoreType;
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        public readonly string $entityClassName
+        public readonly string $entityClassName,
+        protected int $topK = 4,
     ) {
         if (!interface_exists(EntityManagerInterface::class)) {
             throw new \RuntimeException('To use this functionality, you must install the `doctrine/orm` package: `composer require doctrine/orm`.');
@@ -29,9 +33,9 @@ class DoctrineVectorStore implements VectorStoreInterface
         $this->doctrineVectorStoreType->addCustomisationsTo($this->entityManager);
     }
 
-    public function addDocument(Document $document): void
+    public function addDocument(DocumentModelInterface $document): void
     {
-        if ($document->embedding === null) {
+        if (empty($document->embedding)) {
             throw new \RuntimeException('document embedding must be set before adding a document');
         }
 
@@ -51,7 +55,7 @@ class DoctrineVectorStore implements VectorStoreInterface
         $this->entityManager->flush();
     }
 
-    public function similaritySearch(array $embedding, int $k = 4, array $additionalArguments = []): array
+    public function similaritySearch(array $embedding, string $documentModel): array
     {
         $repository = $this->entityManager->getRepository($this->entityClassName);
 
@@ -59,12 +63,11 @@ class DoctrineVectorStore implements VectorStoreInterface
             ->createQueryBuilder('e')
             ->orderBy($this->doctrineVectorStoreType->l2DistanceName().'(e.embedding, :embeddingString)', 'ASC')
             ->setParameter('embeddingString', $this->doctrineVectorStoreType->getVectorAsString($embedding))
-            ->setMaxResults($k);
+            ->setMaxResults($this->topK);
 
-        foreach ($additionalArguments as $key => $value) {
+        foreach ($this->filters as $key => $value) {
             $paramName = 'where_'.$key;
-            $qb
-                ->andWhere(sprintf('e.%s = :%s', $key, $paramName))
+            $qb->andWhere(sprintf('e.%s = :%s', $key, $paramName))
                 ->setParameter($paramName, $value);
         }
 
@@ -72,10 +75,7 @@ class DoctrineVectorStore implements VectorStoreInterface
         return $qb->getQuery()->getResult();
     }
 
-    /**
-     * @param Document $document
-     */
-    private function persistDocument(Document $document): void
+    private function persistDocument(DocumentModelInterface $document): void
     {
         if (empty($document->embedding)) {
             throw new \RuntimeException('Trying to save a document in a vectorStore without embedding');
@@ -107,5 +107,11 @@ class DoctrineVectorStore implements VectorStoreInterface
             ->getQuery();
 
         return $query->toIterable();
+    }
+
+    public function withFilters(array $filters): VectorStoreInterface
+    {
+        $this->filters = $filters;
+        return $this;
     }
 }

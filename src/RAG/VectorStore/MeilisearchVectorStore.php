@@ -4,7 +4,7 @@ namespace NeuronAI\RAG\VectorStore;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 
 class MeilisearchVectorStore implements VectorStoreInterface
 {
@@ -37,7 +37,7 @@ class MeilisearchVectorStore implements VectorStoreInterface
         }
     }
 
-    public function addDocument(Document $document): void
+    public function addDocument(DocumentModelInterface $document): void
     {
         $this->addDocuments([$document]);
     }
@@ -45,16 +45,16 @@ class MeilisearchVectorStore implements VectorStoreInterface
     public function addDocuments(array $documents): void
     {
         $this->client->put('documents', [
-            RequestOptions::JSON => \array_map(function (Document $document) {
+            RequestOptions::JSON => \array_map(function (DocumentModelInterface $document) {
                 return [
-                    'id' => $document->id,
-                    'hash' => $document->hash,
-                    'content' => $document->content,
-                    'sourceType' => $document->sourceType,
-                    'sourceName' => $document->sourceName,
+                    'id' => $document->getId(),
+                    'content' => $document->getContent(),
+                    'sourceType' => $document->getSourceType(),
+                    'sourceName' => $document->getSourceName(),
+                    ...$document->getCustomFields(),
                     '_vectors' => [
                         'default' => [
-                            'embeddings' => $document->embedding,
+                            'embeddings' => $document->getEmbedding(),
                             'regenerate' => false,
                         ],
                     ]
@@ -63,7 +63,7 @@ class MeilisearchVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function similaritySearch(array $embedding): iterable
+    public function similaritySearch(array $embedding, string $documentModel): iterable
     {
         $response = $this->client->post('search', [
             RequestOptions::JSON => [
@@ -80,15 +80,21 @@ class MeilisearchVectorStore implements VectorStoreInterface
 
         $response = \json_decode($response, true);
 
-        return \array_map(function (array $item) {
-            $document = new Document();
-            $document->id = $item['id'] ?? null;
-            $document->hash = $item['hash'] ?? null;
+        return \array_map(function (array $item) use ($documentModel) {
+            $document = new $documentModel();
+            $document->id = $item['id'] ?? \uniqid();
             $document->content = $item['content'];
             $document->sourceType = $item['sourceType'] ?? null;
             $document->sourceName = $item['sourceName'] ?? null;
             $document->embedding = $item['_vectors']['default']['embeddings'];
             $document->score = $item['_rankingScore'];
+
+            // Load custom fields
+            $customFields = \array_intersect_key($item, $document->getCustomFields());
+            foreach ($customFields as $fieldName => $value) {
+                $document->{$fieldName} = $value;
+            }
+
             return $document;
         }, $response['hits']);
     }

@@ -58,11 +58,11 @@ class CohereRerankerPostProcessorTest extends TestCase
         $result = $postProcessor->process($question, $documents);
 
         $this->assertCount(3, $result, "Cohere API returns 3 results by default");
-        $this->assertEquals("Rome is the capital of Italy", $result[0]->content, "Rome should be the first result");
-        $this->assertEquals("Paris is the capital of France", $result[1]->content, "Paris should be the second result");
-        $this->assertEquals("Madrid is the capital of Spain", $result[2]->content, "Madrid should be the third result");
+        $this->assertEquals("Rome is the capital of Italy", $result[0]->getContent(), "Rome should be the first result");
+        $this->assertEquals("Paris is the capital of France", $result[1]->getContent(), "Paris should be the second result");
+        $this->assertEquals("Madrid is the capital of Spain", $result[2]->getContent(), "Madrid should be the third result");
 
-        $this->assertEquals(0.9, $result[0]->score, "Score should match the mock response");
+        $this->assertEquals(0.9, $result[0]->getScore(), "Score should match the mock response");
     }
 
     public function test_post_process_with_top_n_parameter()
@@ -108,7 +108,7 @@ class CohereRerankerPostProcessorTest extends TestCase
         $result = $postProcessor->process($question, $documents);
 
         $this->assertCount(2, $result, "Cohere API returns exactly top_n results");
-        $this->assertEquals("Rome is the capital of Italy", $result[0]->content, "Rome should be the first result");
-        $this->assertEquals("Paris is the capital of France", $result[1]->content, "Paris should be the second result");
+        $this->assertEquals("Rome is the capital of Italy", $result[0]->getContent(), "Rome should be the first result");
+        $this->assertEquals("Paris is the capital of France", $result[1]->getContent(), "Paris should be the second result");
     }
 }

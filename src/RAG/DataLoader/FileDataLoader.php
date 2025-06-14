@@ -2,7 +2,7 @@
 
 namespace NeuronAI\RAG\DataLoader;
 
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 
 class FileDataLoader extends AbstractDataLoader
 {
@@ -103,11 +103,9 @@ class FileDataLoader extends AbstractDataLoader
     }
 
 
-    protected function getDocument(string $content, string $entry): mixed
+    protected function getDocument(string $content, string $entry): DocumentModelInterface
     {
-        $document = new Document($content);
-        $document->id = \uniqid();
-        $document->hash = \hash('sha256', $content);
+        $document = new $this->documentModel($content);
         $document->sourceType = 'files';
         $document->sourceName = $entry;
 

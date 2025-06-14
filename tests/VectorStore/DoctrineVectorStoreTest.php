@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
+use NeuronAI\RAG\Document;
 use NeuronAI\RAG\VectorStore\Doctrine\DoctrineVectorStore;
 use NeuronAI\RAG\VectorStore\Doctrine\VectorType;
 use NeuronAI\Tests\Traits\CheckOpenPort;
@@ -93,11 +94,11 @@ class DoctrineVectorStoreTest extends TestCase
         $vectorStore = new DoctrineVectorStore($this->entityManager, EntityVectorStub::class);
         $vectorStore->addDocuments($documents);
 
-        $entitiesVectorStub = $vectorStore->similaritySearch($this->embeddingToSearch, 2);
+        $entitiesVectorStub = $vectorStore->similaritySearch($this->embeddingToSearch, Document::class);
 
         $this->assertCount(2, $entitiesVectorStub);
         foreach ($entitiesVectorStub as $index => $entityVectorStub) {
-            $this->assertEquals($expectedEmbeddings[$index], $entityVectorStub->embedding);
+            $this->assertEquals($expectedEmbeddings[$index], $entityVectorStub->getEmbedding());
         }
     }
 

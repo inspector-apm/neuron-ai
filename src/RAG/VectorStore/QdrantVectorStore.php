@@ -5,7 +5,7 @@ namespace NeuronAI\RAG\VectorStore;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 
 class QdrantVectorStore implements VectorStoreInterface
 {
@@ -25,26 +25,19 @@ class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    /**
-     * Store a single document.
-     *
-     * @param Document $document
-     * @return void
-     * @throws GuzzleException
-     */
-    public function addDocument(Document $document): void
+    public function addDocument(DocumentModelInterface $document): void
     {
         $this->client->put('points', [
             RequestOptions::JSON => [
                 'points' => [
                     [
-                        'id' => $document->id,
+                        'id' => $document->getId(),
                         'payload' => [
-                            'content' => $document->content,
-                            'sourceType' => $document->sourceType,
-                            'sourceName' => $document->sourceName,
+                            'content' => $document->getContent(),
+                            'sourceType' => $document->getSourceType(),
+                            'sourceName' => $document->getSourceName(),
                         ],
-                        'vector' => $document->embedding,
+                        'vector' => $document->getEmbedding(),
                     ]
                 ]
             ]
@@ -54,20 +47,21 @@ class QdrantVectorStore implements VectorStoreInterface
     /**
      * Bulk save documents.
      *
-     * @param array<Document> $documents
+     * @param DocumentModelInterface[] $documents
      * @return void
      * @throws GuzzleException
      */
     public function addDocuments(array $documents): void
     {
         $points = \array_map(fn ($document) => [
-            'id' => $document->id,
+            'id' => $document->getId(),
             'payload' => [
-                'content' => $document->content,
-                'sourceType' => $document->sourceType,
-                'sourceName' => $document->sourceName,
+                'content' => $document->getContent(),
+                'sourceType' => $document->getSourceType(),
+                'sourceName' => $document->getSourceName(),
+                ...$document->getCustomFields(),
             ],
-            'vector' => $document->embedding,
+            'vector' => $document->getEmbedding(),
         ], $documents);
 
         $this->client->put('points', [
@@ -79,7 +73,7 @@ class QdrantVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function similaritySearch(array $embedding): iterable
+    public function similaritySearch(array $embedding, string $documentModel): iterable
     {
         $response = $this->client->post('points/search', [
             RequestOptions::JSON => [
@@ -92,14 +86,21 @@ class QdrantVectorStore implements VectorStoreInterface
 
         $response = \json_decode($response, true);
 
-        return \array_map(function (array $item) {
-            $document = new Document();
+        return \array_map(function (array $item) use ($documentModel) {
+            $document = new $documentModel();
             $document->id = $item['id'];
             $document->embedding = $item['vector'];
             $document->content = $item['payload']['content'];
             $document->sourceType = $item['payload']['sourceType'];
             $document->sourceName = $item['payload']['sourceName'];
             $document->score = $item['score'];
+
+            // Load custom fields
+            $customFields = \array_intersect_key($item['payload'], $document->getCustomFields());
+            foreach ($customFields as $fieldName => $value) {
+                $document->{$fieldName} = $value;
+            }
+
             return $document;
         }, $response['result']);
     }

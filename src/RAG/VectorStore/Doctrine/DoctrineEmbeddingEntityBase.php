@@ -12,10 +12,10 @@ class DoctrineEmbeddingEntityBase extends Document
     #[ORM\Id]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
-    public mixed $id;
+    public string|int $id;
 
     #[ORM\Column(type: VectorType::VECTOR, length: 3072)]
-    public ?array $embedding = null;
+    public array $embedding = [];
 
     #[ORM\Column(type: Types::TEXT)]
     public string $content;
@@ -29,7 +29,7 @@ class DoctrineEmbeddingEntityBase extends Document
     #[ORM\Column(type: Types::INTEGER)]
     public int $chunkNumber = 0;
 
-    public function getId(): ?string
+    public function getId(): string|int
     {
         return $this->id;
     }

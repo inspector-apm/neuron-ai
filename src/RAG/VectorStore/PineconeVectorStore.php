@@ -4,7 +4,7 @@ namespace NeuronAI\RAG\VectorStore;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 
 class PineconeVectorStore implements VectorStoreInterface
 {
@@ -37,7 +37,7 @@ class PineconeVectorStore implements VectorStoreInterface
         ]);
     }
 
-    public function addDocument(Document $document): void
+    public function addDocument(DocumentModelInterface $document): void
     {
         $this->addDocuments([$document]);
     }
@@ -47,20 +47,21 @@ class PineconeVectorStore implements VectorStoreInterface
         $this->client->post("vectors/upsert", [
             RequestOptions::JSON => [
                 'namespace' => $this->namespace,
-                'vectors' => \array_map(fn (Document $document) => [
-                    'id' => $document->id ?? \uniqid(),
-                    'values' => $document->embedding,
+                'vectors' => \array_map(fn (DocumentModelInterface $document) => [
+                    'id' => $document->getId(),
+                    'values' => $document->getEmbedding(),
                     'metadata' => [
-                        'content' => $document->content,
-                        'sourceType' => $document->sourceType,
-                        'sourceName' => $document->sourceName,
+                        'content' => $document->getContent(),
+                        'sourceType' => $document->getSourceType(),
+                        'sourceName' => $document->getSourceName(),
+                        ...$document->getCustomFields(),
                     ],
                 ], $documents)
             ]
         ]);
     }
 
-    public function similaritySearch(array $embedding): iterable
+    public function similaritySearch(array $embedding, $documentModel): iterable
     {
         $result = $this->client->post("query", [
             RequestOptions::JSON => [
@@ -68,20 +69,27 @@ class PineconeVectorStore implements VectorStoreInterface
                 'includeMetadata' => true,
                 'vector' => $embedding,
                 'topK' => $this->topK,
-                'filters' => $this->filters,
+                'filters' => $this->filters, // Hybrid search
             ]
         ])->getBody()->getContents();
 
         $result = \json_decode($result, true);
 
-        return \array_map(function (array $item) {
-            $document = new Document();
+        return \array_map(function (array $item) use ($documentModel) {
+            $document = new $documentModel();
             $document->id = $item['id'];
             $document->embedding = $item['values'];
             $document->content = $item['metadata']['content'];
             $document->sourceType = $item['metadata']['sourceType'];
             $document->sourceName = $item['metadata']['sourceName'];
             $document->score = $item['score'];
+
+            // Load custom fields
+            $customFields = \array_intersect_key($item['metadata'], $document->getCustomFields());
+            foreach ($customFields as $fieldName => $value) {
+                $document->{$fieldName} = $value;
+            }
+
             return $document;
         }, $result['matches']);
     }

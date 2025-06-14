@@ -12,19 +12,19 @@ class AdaptiveThresholdPostProcessorTest extends TestCase
     public function test_process_with_default_multiplier(): void
     {
         $doc1 = new Document();
-        $doc1->score = 0.8;
+        $doc1->setScore(0.8);
 
         $doc2 = new Document();
-        $doc2->score = 0.3;
+        $doc2->setScore(0.3);
 
         $doc3 = new Document();
-        $doc3->score = 0.7;
+        $doc3->setScore(0.7);
 
         $doc4 = new Document();
-        $doc4->score = 0.4;
+        $doc4->setScore(0.4);
 
         $doc5 = new Document();
-        $doc5->score = 0.9;
+        $doc5->setScore(0.9);
 
         $documents = [$doc1, $doc2, $doc3, $doc4, $doc5];
 
@@ -36,27 +36,27 @@ class AdaptiveThresholdPostProcessorTest extends TestCase
 
         // Median = 0.7, MAD = 0.3, threshold = 0.7 - 0.6 * 0.3 = 0.52
         $this->assertCount(3, $result);
-        $this->assertEquals(0.8, $result[0]->score);
-        $this->assertEquals(0.7, $result[1]->score);
-        $this->assertEquals(0.9, $result[2]->score);
+        $this->assertEquals(0.8, $result[0]->getScore());
+        $this->assertEquals(0.7, $result[1]->getScore());
+        $this->assertEquals(0.9, $result[2]->getScore());
     }
 
     public function test_process_with_multiplier_02(): void
     {
         $doc1 = new Document();
-        $doc1->score = 0.8;
+        $doc1->setScore(0.8);
 
         $doc2 = new Document();
-        $doc2->score = 0.3;
+        $doc2->setScore(0.3);
 
         $doc3 = new Document();
-        $doc3->score = 0.7;
+        $doc3->setScore(0.7);
 
         $doc4 = new Document();
-        $doc4->score = 0.4;
+        $doc4->setScore(0.4);
 
         $doc5 = new Document();
-        $doc5->score = 0.9;
+        $doc5->setScore(0.9);
 
         $documents = [$doc1, $doc2, $doc3, $doc4, $doc5];
 
@@ -68,27 +68,27 @@ class AdaptiveThresholdPostProcessorTest extends TestCase
 
         // Median = 0.7, MAD = 0.3, threshold = 0.7 - 0.2 * 0.3 = 0.64
         $this->assertCount(3, $result);
-        $this->assertEquals(0.8, $result[0]->score);
-        $this->assertEquals(0.7, $result[1]->score);
-        $this->assertEquals(0.9, $result[2]->score);
+        $this->assertEquals(0.8, $result[0]->getScore());
+        $this->assertEquals(0.7, $result[1]->getScore());
+        $this->assertEquals(0.9, $result[2]->getScore());
     }
 
     public function test_process_with_multiplier_1(): void
     {
         $doc1 = new Document();
-        $doc1->score = 0.8;
+        $doc1->setScore(0.8);
 
         $doc2 = new Document();
-        $doc2->score = 0.3;
+        $doc2->setScore(0.3);
 
         $doc3 = new Document();
-        $doc3->score = 0.7;
+        $doc3->setScore(0.7);
 
         $doc4 = new Document();
-        $doc4->score = 0.4;
+        $doc4->setScore(0.4);
 
         $doc5 = new Document();
-        $doc5->score = 0.9;
+        $doc5->setScore(0.9);
 
         $documents = [$doc1, $doc2, $doc3, $doc4, $doc5];
 
@@ -101,27 +101,27 @@ class AdaptiveThresholdPostProcessorTest extends TestCase
         // Median = 0.7, MAD = 0.3, threshold = 0.7 - 1.0 * 0.2 = 0.5
         // From the actual results we can see the threshold is 0.5, so 3 documents pass
         $this->assertCount(3, $result);
-        $this->assertEquals(0.8, $result[0]->score);
-        $this->assertEquals(0.7, $result[1]->score);
-        $this->assertEquals(0.9, $result[2]->score);
+        $this->assertEquals(0.8, $result[0]->getScore());
+        $this->assertEquals(0.7, $result[1]->getScore());
+        $this->assertEquals(0.9, $result[2]->getScore());
     }
 
     public function test_process_with_multiplier_2(): void
     {
         $doc1 = new Document();
-        $doc1->score = 0.8;
+        $doc1->setScore(0.8);
 
         $doc2 = new Document();
-        $doc2->score = 0.3;
+        $doc2->setScore(0.3);
 
         $doc3 = new Document();
-        $doc3->score = 0.7;
+        $doc3->setScore(0.7);
 
         $doc4 = new Document();
-        $doc4->score = 0.4;
+        $doc4->setScore(0.4);
 
         $doc5 = new Document();
-        $doc5->score = 0.9;
+        $doc5->setScore(0.9);
 
         $documents = [$doc1, $doc2, $doc3, $doc4, $doc5];
 
@@ -139,7 +139,7 @@ class AdaptiveThresholdPostProcessorTest extends TestCase
     public function test_process_with_small_array(): void
     {
         $doc1 = new Document();
-        $doc1->score = 0.8;
+        $doc1->setScore(0.8);
 
         $documents = [$doc1];
 
@@ -150,19 +150,19 @@ class AdaptiveThresholdPostProcessorTest extends TestCase
 
         // Should return the original array unchanged
         $this->assertCount(1, $result);
-        $this->assertEquals(0.8, $result[0]->score);
+        $this->assertEquals(0.8, $result[0]->getScore());
     }
 
     public function test_process_with_zero_mad(): void
     {
         $doc1 = new Document();
-        $doc1->score = 0.5;
+        $doc1->setScore(0.5);
 
         $doc2 = new Document();
-        $doc2->score = 0.5;
+        $doc2->setScore(0.5);
 
         $doc3 = new Document();
-        $doc3->score = 0.5;
+        $doc3->setScore(0.5);
 
         $documents = [$doc1, $doc2, $doc3];
 

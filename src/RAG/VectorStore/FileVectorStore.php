@@ -3,7 +3,7 @@
 namespace NeuronAI\RAG\VectorStore;
 
 use NeuronAI\Exceptions\VectorStoreException;
-use NeuronAI\RAG\Document;
+use NeuronAI\RAG\DocumentModelInterface;
 use NeuronAI\RAG\VectorStore\Search\SimilaritySearch;
 
 class FileVectorStore implements VectorStoreInterface
@@ -24,7 +24,7 @@ class FileVectorStore implements VectorStoreInterface
         return $this->directory . DIRECTORY_SEPARATOR . $this->name.$this->ext;
     }
 
-    public function addDocument(Document $document): void
+    public function addDocument(DocumentModelInterface $document): void
     {
         $this->addDocuments([$document]);
     }
@@ -32,11 +32,11 @@ class FileVectorStore implements VectorStoreInterface
     public function addDocuments(array $documents): void
     {
         $this->appendToFile(
-            \array_map(fn (Document $document) => $document->jsonSerialize(), $documents)
+            \array_map(fn (DocumentModelInterface $document) => $document->jsonSerialize(), $documents)
         );
     }
 
-    public function similaritySearch(array $embedding): array
+    public function similaritySearch(array $embedding, string $documentModel): array
     {
         $topItems = [];
 
@@ -57,14 +57,20 @@ class FileVectorStore implements VectorStoreInterface
             }
         }
 
-        return \array_reduce($topItems, function ($carry, $item) {
+        return \array_reduce($topItems, function ($carry, $item) use ($documentModel) {
             $itemDoc = $item['document'];
-            $document = new Document($itemDoc['content']);
+            $document = new $documentModel($itemDoc['content']);
             $document->embedding = $itemDoc['embedding'];
             $document->sourceType = $itemDoc['sourceType'];
             $document->sourceName = $itemDoc['sourceName'];
             $document->id = $itemDoc['id'];
             $document->score = 1 - $item['dist'];
+
+            $customFields = \array_intersect_key($itemDoc, $document->getCustomFields());
+            foreach ($customFields as $fieldName => $value) {
+                $document->{$fieldName} = $value;
+            }
+
             $carry[] = $document;
             return $carry;
         }, []);
