@@ -159,7 +159,7 @@ class Tool implements ToolInterface
             $inputs = $this->getInputs()[$property->getName()];
 
             if ($property instanceof ObjectProperty && $property->getClass()) {
-                return Deserializer::fromJson(\json_encode($inputs), $property->getClass());
+                return [$property->getName() => Deserializer::fromJson(\json_encode($inputs), $property->getClass())];
             }
 
             if ($property instanceof ArrayProperty) {
@@ -167,15 +167,17 @@ class Tool implements ToolInterface
                 if ($items instanceof ObjectProperty && $items->getClass()) {
                     $class = $items->getClass();
 
-                    return array_map(function ($input) use ($class) {
-                        return Deserializer::fromJson(\json_encode($input), $class);
+                    return array_map(function ($input) use ($class, $property) {
+                        return [$property->getName() => Deserializer::fromJson(\json_encode($input), $class)];
                     }, $inputs);
                 }
             }
 
             // No extra treatments for basic property types
-            return $inputs;
+            return [$property->getName() => $inputs];
         }, $this->properties);
+
+        $parameters = collect($parameters)->collapse()->all();
 
         $this->setResult(
             \call_user_func($this->callback, ...$parameters)
