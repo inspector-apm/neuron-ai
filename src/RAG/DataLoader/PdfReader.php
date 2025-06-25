@@ -102,7 +102,7 @@ class PdfReader implements ReaderInterface
         return \array_reduce(\array_map($mapper, $options), $reducer, []);
     }
 
-    public function setTimeout($timeout): self
+    public function setTimeout(int $timeout): self
     {
         $this->timeout = $timeout;
         return $this;

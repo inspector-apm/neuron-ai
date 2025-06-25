@@ -22,7 +22,7 @@ trait HandleWithTools
         return $this;
     }
 
-    public function findTool($name): ToolInterface
+    public function findTool(string $name): ToolInterface
     {
         foreach ($this->tools as $tool) {
             if ($tool->getName() === $name) {

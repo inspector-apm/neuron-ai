@@ -84,7 +84,7 @@ class Anthropic implements AIProviderInterface
     protected function generateToolsPayload(): array
     {
         return \array_map(function (ToolInterface $tool) {
-            $properties = \array_reduce($tool->getProperties(), function ($carry, ToolPropertyInterface $property) {
+            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolPropertyInterface $property): array {
                 $carry[$property->getName()] = $property->getJsonSchema();
                 return $carry;
             }, []);

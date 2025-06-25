@@ -124,7 +124,7 @@ class AgentMonitoring implements \SplObserver
         }
     }
 
-    public function start(Agent $agent, string $event, $data = null): void
+    public function start(Agent $agent, string $event, mixed $data = null): void
     {
         if (!$this->inspector->isRecording()) {
             return;
@@ -147,7 +147,7 @@ class AgentMonitoring implements \SplObserver
         }
     }
 
-    public function stop(Agent $agent, string $event, $data = null): void
+    public function stop(Agent $agent, string $event, mixed $data = null): void
     {
         $method = $this->getPrefix($event);
         $class = $agent::class;

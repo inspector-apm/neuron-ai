@@ -6,9 +6,9 @@ namespace NeuronAI\MCP;
 
 use NeuronAI\StaticConstructor;
 use NeuronAI\Tools\PropertyType;
-use NeuronAI\Tools\ToolProperty;
 use NeuronAI\Tools\Tool;
 use NeuronAI\Tools\ToolInterface;
+use NeuronAI\Tools\ToolProperty;
 
 class McpConnector
 {
@@ -31,7 +31,7 @@ class McpConnector
     {
         $tools = $this->client->listTools();
 
-        return \array_map(fn ($tool) => $this->createTool($tool), $tools);
+        return \array_map(fn (array $tool): ToolInterface => $this->createTool($tool), $tools);
     }
 
     /**

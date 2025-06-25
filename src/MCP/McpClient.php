@@ -56,7 +56,7 @@ class McpClient
      *
      * @throws \Exception
      */
-    public function listTools($cursor = null): array
+    public function listTools(): array
     {
         $tools = [];
 
@@ -86,7 +86,7 @@ class McpClient
      *
      * @throws \Exception
      */
-    public function callTool($toolName, $arguments = []): array
+    public function callTool(string $toolName, array $arguments = []): array
     {
         $request = [
             "jsonrpc" => "2.0",

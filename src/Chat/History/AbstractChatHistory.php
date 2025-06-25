@@ -30,7 +30,7 @@ abstract class AbstractChatHistory implements ChatHistoryInterface
         if ($message->getUsage()) {
             // For every new message, we store only the marginal contribution of input tokens
             // of the latest interactions.
-            $previousInputConsumption = \array_reduce($this->history, function ($carry, Message $message) {
+            $previousInputConsumption = \array_reduce($this->history, function (int $carry, Message $message): int {
                 if ($message->getUsage()) {
                     $carry += $message->getUsage()->inputTokens;
                 }

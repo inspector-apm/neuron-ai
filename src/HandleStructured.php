@@ -28,9 +28,6 @@ trait HandleStructured
     /**
      * Enforce a structured response.
      *
-     * @param Message|array $messages
-     * @param string|null $class
-     * @param int $maxRetries
      * @return mixed
      * @throws AgentException
      * @throws \ReflectionException

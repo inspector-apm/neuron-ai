@@ -45,7 +45,7 @@ class MemoryVectorStore implements VectorStoreInterface
 
         $topKIndices = \array_slice(\array_keys($distances), 0, $this->topK, true);
 
-        return \array_reduce($topKIndices, function ($carry, $index) use ($distances) {
+        return \array_reduce($topKIndices, function (array $carry, int $index) use ($distances): array {
             $document = $this->documents[$index];
             $document->setScore(1 - $distances[$index]);
             $carry[] = $document;

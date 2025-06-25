@@ -116,7 +116,7 @@ class Tool implements ToolInterface
 
     public function getRequiredProperties(): array
     {
-        return \array_reduce($this->getProperties(), function ($carry, ToolPropertyInterface $property) {
+        return \array_reduce($this->getProperties(), function (array $carry, ToolPropertyInterface $property) {
             if ($property->isRequired()) {
                 $carry[] = $property->getName();
             }
@@ -193,7 +193,7 @@ class Tool implements ToolInterface
             }
         }
 
-        $parameters = \array_reduce($this->getProperties(), function ($carry, $property) {
+        $parameters = \array_reduce($this->getProperties(), function (array $carry, ToolPropertyInterface $property) {
             $propertyName = $property->getName();
             $inputs = $this->getInputs();
 
@@ -220,7 +220,7 @@ class Tool implements ToolInterface
                 $items = $property->getItems();
                 if ($items instanceof ObjectProperty && $items->getClass()) {
                     $class = $items->getClass();
-                    $carry[$propertyName] = \array_map(fn ($input) => Deserializer::fromJson(\json_encode($input), $class), $inputValue);
+                    $carry[$propertyName] = \array_map(fn (array|object $input) => Deserializer::fromJson(\json_encode($input), $class), $inputValue);
                     return $carry;
                 }
             }

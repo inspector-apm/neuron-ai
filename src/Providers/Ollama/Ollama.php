@@ -72,7 +72,7 @@ class Ollama implements AIProviderInterface
                 ],
             ];
 
-            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolPropertyInterface $property) {
+            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolPropertyInterface $property): array {
                 $carry[$property->getName()] = [
                     'type' => $property->getType()->value,
                     'description' => $property->getDescription(),
@@ -95,7 +95,7 @@ class Ollama implements AIProviderInterface
 
     protected function createToolCallMessage(array $message): Message
     {
-        $tools = \array_map(fn (array $item) => $this->findTool($item['function']['name'])
+        $tools = \array_map(fn (array $item): ToolInterface => $this->findTool($item['function']['name'])
             ->setInputs($item['function']['arguments']), $message['tool_calls']);
 
         $result = new ToolCallMessage(

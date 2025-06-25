@@ -35,7 +35,7 @@ class AdaptiveThresholdPostProcessor implements PostProcessorInterface
             return $documents;
         }
 
-        $scores = \array_map(fn ($document) => $document->getScore(), $documents);
+        $scores = \array_map(fn (Document $document): float => $document->getScore(), $documents);
         $median = $this->calculateMedian($scores);
         $mad = $this->calculateMAD($scores, $median);
 
@@ -81,7 +81,7 @@ class AdaptiveThresholdPostProcessor implements PostProcessorInterface
      */
     protected function calculateMAD(array $values, float $median): float
     {
-        $deviations = \array_map(fn ($v) => \abs($v - $median), $values);
+        $deviations = \array_map(fn (float$v): float => \abs($v - $median), $values);
 
         // MAD is the median of deviations
         return $this->calculateMedian($deviations);

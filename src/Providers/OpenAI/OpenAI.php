@@ -75,7 +75,7 @@ class OpenAI implements AIProviderInterface
 
     protected function generateToolsPayload(): array
     {
-        return \array_map(function (ToolInterface $tool) {
+        return \array_map(function (ToolInterface $tool): array {
             $payload = [
                 'type' => 'function',
                 'function' => [
@@ -89,7 +89,7 @@ class OpenAI implements AIProviderInterface
                 ]
             ];
 
-            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolPropertyInterface $property) {
+            $properties = \array_reduce($tool->getProperties(), function (array $carry, ToolPropertyInterface $property): array {
                 $carry[$property->getName()] = $property->getJsonSchema();
                 return $carry;
             }, []);
@@ -109,7 +109,7 @@ class OpenAI implements AIProviderInterface
     protected function createToolCallMessage(array $message): Message
     {
         $tools = \array_map(
-            fn (array $item) => $this->findTool($item['function']['name'])
+            fn (array $item): ToolInterface => $this->findTool($item['function']['name'])
                 ->setInputs(
                     \json_decode($item['function']['arguments'], true)
                 )

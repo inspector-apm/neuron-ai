@@ -68,7 +68,7 @@ class StdioTransport implements McpTransportInterface
     /**
      * Send a request to the MCP server
      */
-    public function send($data): void
+    public function send(array $data): void
     {
         if (!\is_resource($this->process)) {
             throw new McpException("Process is not running");

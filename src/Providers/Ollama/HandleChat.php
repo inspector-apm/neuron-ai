@@ -10,6 +10,7 @@ use NeuronAI\Chat\Messages\AssistantMessage;
 use NeuronAI\Chat\Messages\Message;
 use NeuronAI\Chat\Messages\Usage;
 use NeuronAI\Exceptions\ProviderException;
+use Psr\Http\Message\ResponseInterface;
 
 trait HandleChat
 {
@@ -37,7 +38,7 @@ trait HandleChat
         }
 
         return $this->client->postAsync('chat', \compact('json'))
-            ->then(function ($response) {
+            ->then(function (ResponseInterface $response): Message {
                 if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
                     throw new ProviderException("Ollama chat error: {$response->getBody()->getContents()}");
                 }

@@ -45,7 +45,7 @@ class CohereRerankerPostProcessor implements PostProcessorInterface
 
         $result = \json_decode($response, true);
 
-        return \array_map(function ($item) use ($documents) {
+        return \array_map(function (array $item) use ($documents): Document {
             $document = $documents[$item['index']];
             $document->setScore($item['relevance_score']);
             return $document;

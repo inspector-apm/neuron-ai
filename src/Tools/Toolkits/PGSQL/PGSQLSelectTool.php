@@ -167,7 +167,7 @@ It looks like you are trying to run a write query using the read-only query tool
         // Simple split on semicolons (this could be enhanced for more complex cases)
         return \array_filter(
             \array_map('trim', \explode(';', $query)),
-            fn ($stmt) => !empty($stmt)
+            fn (string $stmt): bool => !empty($stmt)
         );
     }
 

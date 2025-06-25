@@ -111,7 +111,7 @@ class TavilySearchTool extends Tool
 
         return [
             'answer' => $result['answer'],
-            'results' => \array_map(fn ($item) => [
+            'results' => \array_map(fn (array $item): array => [
                 'title' => $item['title'],
                 'url' => $item['url'],
                 'content' => $item['content'],

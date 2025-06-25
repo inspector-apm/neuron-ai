@@ -46,7 +46,7 @@ trait HandleChat
             ->setTools($tools)
             ->chatAsync(
                 $this->resolveChatHistory()->getMessages()
-            )->then(function (Message $response) {
+            )->then(function (Message $response): Message|PromiseInterface {
                 $this->notify(
                     'inference-stop',
                     new InferenceStop($this->resolveChatHistory()->getLastMessage(), $response)

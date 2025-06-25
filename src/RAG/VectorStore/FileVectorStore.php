@@ -52,14 +52,14 @@ class FileVectorStore implements VectorStoreInterface
 
             $topItems[] = \compact('dist', 'document');
 
-            \usort($topItems, fn ($a, $b) => $a['dist'] <=> $b['dist']);
+            \usort($topItems, fn (array $a, array $b): int => $a['dist'] <=> $b['dist']);
 
             if (\count($topItems) > $this->topK) {
                 $topItems = \array_slice($topItems, 0, $this->topK, true);
             }
         }
 
-        return \array_map(function ($item) {
+        return \array_map(function (array $item): Document {
             $itemDoc = $item['document'];
             $document = new Document($itemDoc['content']);
             $document->embedding = $itemDoc['embedding'];
@@ -88,9 +88,9 @@ class FileVectorStore implements VectorStoreInterface
         );
     }
 
-    protected function getLine($file): \Generator
+    protected function getLine(string $filename): \Generator
     {
-        $f = \fopen($file, 'r');
+        $f = \fopen($filename, 'r');
 
         try {
             while ($line = \fgets($f)) {

@@ -27,7 +27,7 @@ class ToolCallResultMessage extends UserMessage
             parent::jsonSerialize(),
             [
                 'type' => 'tool_call_result',
-                'tools' => \array_map(fn ($tool) => $tool->jsonSerialize(), $this->tools)
+                'tools' => \array_map(fn (ToolInterface $tool): array => $tool->jsonSerialize(), $this->tools)
             ]
         );
     }

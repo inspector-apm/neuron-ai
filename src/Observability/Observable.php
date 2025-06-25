@@ -70,7 +70,7 @@ trait Observable
         }
     }
 
-    public function notify(string $event = "*", $data = null): void
+    public function notify(string $event = "*", mixed $data = null): void
     {
         // Broadcasting the '$event' event";
         foreach ($this->getEventObservers($event) as $observer) {

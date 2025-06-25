@@ -11,18 +11,18 @@ class Deserializer
     /**
      * Deserialize JSON data into a specified class instance
      *
-     * @param string $jsonData The JSON string to deserialize
-     * @param string $className The fully qualified class name to instantiate
-     * @return mixed Instance of the specified class
+     * @param  string  $jsonData  The JSON string to deserialize
+     * @param  string  $className  The fully qualified class name to instantiate
+     * @return object Instance of the specified class
      * @throws DeserializerException|\ReflectionException
      */
-    public static function fromJson(string $jsonData, string $className): mixed
+    public static function fromJson(string $jsonData, string $className): object
     {
         // Decode JSON data
         $data = \json_decode($jsonData, true);
 
         if (\json_last_error() !== \JSON_ERROR_NONE) {
-            throw new DeserializerException('Invalid JSON: ' . \json_last_error_msg());
+            throw new DeserializerException('Invalid JSON: '.\json_last_error_msg());
         }
 
         return self::deserializeObject($data, $className);
@@ -31,12 +31,12 @@ class Deserializer
     /**
      * Deserialize an array/object into a class instance
      *
-     * @param array $data The data to deserialize
-     * @param string $className The target class name
-     * @return mixed
+     * @param  array  $data  The data to deserialize
+     * @param  string  $className  The target class name
+     * @return object
      * @throws DeserializerException|\ReflectionException
      */
-    private static function deserializeObject(array $data, string $className): mixed
+    private static function deserializeObject(array $data, string $className): object
     {
         if (!\class_exists($className)) {
             throw new DeserializerException("Class {$className} does not exist");
@@ -80,8 +80,8 @@ class Deserializer
     /**
      * Find property value in data, supporting different naming conventions
      *
-     * @param array $data
-     * @param string $propertyName
+     * @param  array  $data
+     * @param  string  $propertyName
      * @return mixed
      */
     private static function findPropertyValue(array $data, string $propertyName): mixed
@@ -134,8 +134,11 @@ class Deserializer
      *
      * @throws DeserializerException|\ReflectionException
      */
-    private static function castToSingleType(mixed $value, \ReflectionNamedType $type, \ReflectionProperty $property): mixed
-    {
+    private static function castToSingleType(
+        mixed $value,
+        \ReflectionNamedType $type,
+        \ReflectionProperty $property
+    ): mixed {
         $typeName = $type->getName();
 
         // Handle null values
@@ -191,7 +194,7 @@ class Deserializer
         if (self::isArrayOfObjects($property)) {
             $elementType = self::getArrayElementType($property);
             if ($elementType && \class_exists($elementType)) {
-                return \array_map(fn ($item) => self::deserializeObject($item, $elementType), $value);
+                return \array_map(fn (array $item): object => self::deserializeObject($item, $elementType), $value);
             }
         }
 
@@ -249,10 +252,10 @@ class Deserializer
         }
 
         if (\is_numeric($value)) {
-            return new \DateTime('@' . $value);
+            return new \DateTime('@'.$value);
         }
 
-        throw new DeserializerException("Cannot create DateTime from value type: " . \gettype($value));
+        throw new DeserializerException("Cannot create DateTime from value type: ".\gettype($value));
     }
 
     /**
@@ -275,15 +278,15 @@ class Deserializer
         }
 
         if (\is_numeric($value)) {
-            return new \DateTimeImmutable('@' . $value);
+            return new \DateTimeImmutable('@'.$value);
         }
 
-        throw new DeserializerException("Cannot create DateTimeImmutable from value type: " . \gettype($value));
+        throw new DeserializerException("Cannot create DateTimeImmutable from value type: ".\gettype($value));
     }
 
     private static function handleEnum(BackedEnum|string $typeName, mixed $value): BackedEnum
     {
-        if (! \is_subclass_of($typeName, BackedEnum::class)) {
+        if (!\is_subclass_of($typeName, BackedEnum::class)) {
             throw new DeserializerException("Cannot create BackedEnum from: {$typeName}");
         }
 

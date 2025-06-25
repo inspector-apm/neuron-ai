@@ -85,7 +85,7 @@ class SentenceTextSplitterTest extends TestCase
             'This is the third sentence.'
         ];
 
-        $allContent = \implode(' ', \array_map(fn ($c) => $c->getContent(), $result));
+        $allContent = \implode(' ', \array_map(fn (Document $c): string => $c->getContent(), $result));
 
         foreach ($sentences as $sentence) {
             $this->assertStringContainsString($sentence, $allContent, "The sentence '$sentence' is not present");
@@ -197,7 +197,7 @@ class SentenceTextSplitterTest extends TestCase
             $this->assertLessThanOrEqual(6, \count($words));
         }
 
-        $allContent = \implode(' ', \array_map(fn ($c) => $c->getContent(), $result));
+        $allContent = \implode(' ', \array_map(fn (Document $c): string => $c->getContent(), $result));
 
         $this->assertStringContainsString('Short.', $allContent);
         $this->assertStringContainsString('End.', $allContent);
