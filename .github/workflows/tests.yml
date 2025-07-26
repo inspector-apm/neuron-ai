@@ -9,7 +9,12 @@ on:
 jobs:
     ci:
         runs-on: ${{ matrix.os }}
-#        services:
+        services:
+            qdrant:
+                image: qdrant/qdrant:latest
+                ports:
+                    - 6333:6333
+                    - 6334:6334
 #            postgres:
 #                image: postgres
 #                env:
