@@ -1,10 +1,10 @@
-# CLAUDE.md
+# AGENT.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to coding agents when working in this repository.
 
 ## Project Overview
 
-Neuron AI is a PHP framework for creating AI agents with features like chat history, tool integration, RAG (Retrieval Augmented Generation), structured output, and workflow orchestration. The codebase follows PSR-12 standards with strict typing and modern PHP 8.1+ features.
+Neuron is a PHP AI framework for creating AI agents with features like chat history, tool integration, RAG (Retrieval Augmented Generation), structured output, and workflow orchestration. The codebase follows PSR-12 standards with strict typing and modern PHP 8.1+ features.
 
 ## Common Development Commands
 
@@ -51,7 +51,7 @@ Each module is placed in its own namespace under `src/`. Sub-modules are grouped
 **Agent System**: The framework revolves around three main entity types:
 - `Agent` (src/Agent.php) - Base agent class with chat, streaming, and structured output capabilities
 - `RAG` (src/RAG/RAG.php) - Extends Agent with vector search and document retrieval
-- `Workflow` (src/Workflow/Workflow.php) - Event-driven node execution system for complex agentic processes with persistence and interruption support
+- `Workflow` (src/Workflow/Workflow.php) - Event-driven node execution system for complex agentic processes with persistence. streaming, and interruption support
 
 **Provider Architecture**: Abstracted AI provider system supporting multiple LLM services:
 - All providers implement `AIProviderInterface` (src/Providers/AIProviderInterface.php)
@@ -138,6 +138,41 @@ foreach ($handler->streamEvents() as $event) {
 $finalState = $handler->getResult();
 ```
 
+### Neuron CLI
+
+Neuron CLI is a command-line interface for interacting with the framework. It supports the following commands:
+
+#### Core Commands
+- `evaluation` - Run AI evaluation tests on a directory of evaluators
+- `help` - Show help for a specific command
+
+#### Make Commands (Code Generation)
+The framework provides make commands to generate boilerplate classes:
+
+- `make:agent` - Create a new Agent class
+- `make:node` - Create a new Node class for workflows
+- `make:tool` - Create a new Tool class
+- `make:rag` - Create a new RAG class
+- `make:workflow` - Create a new Workflow class
+
+Run commands with:
+
+```bash
+# Core commands
+php vendor/bin/neuron evaluation --path=/path/to/evaluators
+php vendor/bin/neuron evaluation /path/to/evaluators --verbose
+
+# Make commands
+php vendor/bin/neuron make:agent MyAgent
+php vendor/bin/neuron make:tool MyTool
+php vendor/bin/neuron make:node ValidationNode
+php vendor/bin/neuron make:rag MyRAG
+php vendor/bin/neuron make:workflow DataProcessingWorkflow
+
+# Get help for any command
+php vendor/bin/neuron <command> --help
+```
+
 ### Key Traits and Patterns
 
 The codebase uses PHP traits extensively for modular functionality:
@@ -150,6 +185,7 @@ All major components support the Observer pattern for monitoring and debugging, 
 ### Directory Structure
 
 - `src/` - Main source code with PSR-4 autoloading under `NeuronAI\` namespace
+- `src/Console/` - Neuron CLI commands
 - `src/Providers/` - AI provider implementations
 - `src/Tools/` - Tool system and built-in toolkits
 - `src/RAG/` - RAG system components
